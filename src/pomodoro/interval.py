@@ -11,15 +11,6 @@ class Interval:
     def create_interval(self, work=inv.WORK_TIME, short=inv.SHORT_TIME, long=inv.LONG_TIME, n=inv.COUNT):
 
         if (
-            inv.MIN_WORK < work > inv.MAX_WORK 
-            or inv.MIN_SHORT < short > inv.MAX_SHORT 
-            or inv.MIN_LONG < long > inv.MAX_LONG 
-            or inv.MIN_COUNT < n > inv.MAX_COUNT
-            ):
-
-            raise ValueError("Interval(s) not within range!")
-
-        elif (
             type(work) is not int
             or type(short) is not int
             or type(long) is not int
@@ -28,11 +19,21 @@ class Interval:
 
             raise TypeError("Interval(s) must be a whole number!")
         
+
+        elif (
+            (work < inv.MIN_WORK or work > inv.MAX_WORK)
+            or (short < inv.MIN_SHORT or short > inv.MAX_SHORT)
+            or (long < inv.MIN_LONG or long > inv.MAX_LONG)
+            or (n < inv.MIN_COUNT or n > inv.MAX_COUNT)
+            ):
+
+            raise ValueError("Interval(s) not within range!")
+        
         else:
             interval = []
             work_chunk = [IntervalType.WORK, IntervalType.SHORT]
             end_chunk = [IntervalType.WORK, IntervalType.LONG]
-            for _ in range(n-1):
+            for _ in range(1, n):
                 interval.extend(work_chunk)
             interval.extend(end_chunk)
             return interval

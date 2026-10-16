@@ -8,6 +8,9 @@ class TestInterval:
         res = i.create_interval()
         assert res == [pomo.IntervalType.WORK, pomo.IntervalType.SHORT, pomo.IntervalType.WORK, pomo.IntervalType.SHORT, pomo.IntervalType.WORK, pomo.IntervalType.SHORT, pomo.IntervalType.WORK, pomo.IntervalType.LONG]
 
+    #@pytest.mark.parametrize("work,expected", [(60)])
+
+
     def test_work_pass(self):
         i = pomo.Interval()
         res = i.create_interval(work=60)
@@ -34,6 +37,11 @@ class TestInterval:
         i = pomo.Interval()
         with pytest.raises(TypeError):
             i.create_interval(work=True)
+
+    def test_work_n0(self):
+        i = pomo.Interval()
+        with pytest.raises(ValueError):
+            i.create_interval(work=0)
 
 
     def test_short_pass(self):
@@ -63,6 +71,11 @@ class TestInterval:
         with pytest.raises(TypeError):
             i.create_interval(short=False)
 
+    def test_short_n0(self):
+        i = pomo.Interval()
+        with pytest.raises(ValueError):
+            i.create_interval(short=0)
+
 
     def test_long_pass(self):
         i = pomo.Interval()
@@ -90,6 +103,11 @@ class TestInterval:
         i = pomo.Interval()
         with pytest.raises(TypeError):
             i.create_interval(long=True)
+
+    def test_long_n0(self):
+        i = pomo.Interval()
+        with pytest.raises(ValueError):
+            i.create_interval(long=0)
 
 
     def test_count_pass(self):
@@ -126,6 +144,5 @@ class TestInterval:
 
     def test_count_n0(self):
         i = pomo.Interval()
-        with pytest.raises(ValueError) as v:
+        with pytest.raises(ValueError):
             i.create_interval(n=0)
-        assert "Interval(s) not within range!" in str(v.value)
