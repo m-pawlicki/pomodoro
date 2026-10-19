@@ -1,4 +1,5 @@
 import pomodoro.interval_settings as inv
+from dataclasses import dataclass
 from enum import Enum
 
 class IntervalType(Enum):
@@ -6,9 +7,13 @@ class IntervalType(Enum):
     SHORT = 2
     LONG = 3
 
+@dataclass
 class Interval:
+    name: IntervalType
+    duration: int
+    position: int
 
-    def create_interval(self, work=inv.WORK_TIME, short=inv.SHORT_TIME, long=inv.LONG_TIME, n=inv.COUNT):
+def create_interval_plan(work=inv.WORK_TIME, short=inv.SHORT_TIME, long=inv.LONG_TIME, n=inv.COUNT) -> list[Interval]:
 
         if (
             type(work) is not int
@@ -17,7 +22,7 @@ class Interval:
             or type(n) is not int
             ):
 
-            raise TypeError("Interval(s) must be a whole number!")
+            raise TypeError("Interval must use whole numbers")
         
 
         elif (
@@ -27,13 +32,13 @@ class Interval:
             or (n < inv.MIN_COUNT or n > inv.MAX_COUNT)
             ):
 
-            raise ValueError("Interval(s) not within range!")
+            raise ValueError("Interval not within range")
         
         else:
-            interval = []
-            work_chunk = [IntervalType.WORK, IntervalType.SHORT]
-            end_chunk = [IntervalType.WORK, IntervalType.LONG]
-            for _ in range(1, n):
-                interval.extend(work_chunk)
-            interval.extend(end_chunk)
-            return interval
+            interval_plan: list[Interval] = []
+            for i in range(1, n):
+                interval_plan.append(Interval(IntervalType.WORK, work, i))
+                interval_plan.append(Interval(IntervalType.SHORT, short, i))
+            interval_plan.append(Interval(IntervalType.WORK, work, n))
+            interval_plan.append(Interval(IntervalType.LONG, long, n))
+            return interval_plan

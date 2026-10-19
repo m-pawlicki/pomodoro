@@ -1,148 +1,89 @@
 import pomodoro.interval as pomo
 import pytest
+from contextlib import nullcontext
 
 class TestInterval:
 
-    def test_default_pass(self):
-        i = pomo.Interval()
-        res = i.create_interval()
-        assert res == [pomo.IntervalType.WORK, pomo.IntervalType.SHORT, pomo.IntervalType.WORK, pomo.IntervalType.SHORT, pomo.IntervalType.WORK, pomo.IntervalType.SHORT, pomo.IntervalType.WORK, pomo.IntervalType.LONG]
+    def test_default_vals(self):
+        res = pomo.create_interval_plan()
+        assert res == [
+            pomo.Interval(pomo.IntervalType.WORK, 25,1),
+            pomo.Interval(pomo.IntervalType.SHORT, 5,1),
+            pomo.Interval(pomo.IntervalType.WORK, 25,2),
+            pomo.Interval(pomo.IntervalType.SHORT, 5,2),
+            pomo.Interval(pomo.IntervalType.WORK, 25,3),
+            pomo.Interval(pomo.IntervalType.SHORT, 5,3),
+            pomo.Interval(pomo.IntervalType.WORK, 25,4),
+            pomo.Interval(pomo.IntervalType.LONG, 20,4),
+            ]
 
-    #@pytest.mark.parametrize("work,expected", [(60)])
-
-
-    def test_work_pass(self):
-        i = pomo.Interval()
-        res = i.create_interval(work=60)
-
-    def test_work_range_fail(self):
-        i = pomo.Interval()
-        with pytest.raises(ValueError):
-            i.create_interval(work=100)
-
-    def test_work_edge_min(self):
-        i = pomo.Interval()
-        res = i.create_interval(work=pomo.inv.MIN_WORK)
-
-    def test_work_edge_max(self):
-        i = pomo.Interval()
-        res = i.create_interval(work=pomo.inv.MAX_WORK)
-
-    def test_work_type_float(self):
-        i = pomo.Interval()
-        with pytest.raises(TypeError):
-            i.create_interval(work=5.5) #type: ignore
-
-    def test_work_type_bool(self):
-        i = pomo.Interval()
-        with pytest.raises(TypeError):
-            i.create_interval(work=True)
-
-    def test_work_n0(self):
-        i = pomo.Interval()
-        with pytest.raises(ValueError):
-            i.create_interval(work=0)
+    def test_default_length(self):
+        res = pomo.create_interval_plan()
+        assert len(res) == 8
 
 
-    def test_short_pass(self):
-        i = pomo.Interval()
-        res = i.create_interval(short=10)
+    # Within range, outside upper + lower ranges, at min + max, float, bool
 
-    def test_short_range_fail(self):
-        i = pomo.Interval()
-        with pytest.raises(ValueError):
-            i.create_interval(short=25)
-
-    def test_short_edge_min(self):
-        i = pomo.Interval()
-        res = i.create_interval(short=pomo.inv.MIN_SHORT)
-
-    def test_short_edge_max(self):
-        i = pomo.Interval()
-        res = i.create_interval(short=pomo.inv.MAX_SHORT)
-
-    def test_short_type_float(self):
-        i = pomo.Interval()
-        with pytest.raises(TypeError):
-            i.create_interval(short=6.9) #type: ignore
-
-    def test_short_type_bool(self):
-        i = pomo.Interval()
-        with pytest.raises(TypeError):
-            i.create_interval(short=False)
-
-    def test_short_n0(self):
-        i = pomo.Interval()
-        with pytest.raises(ValueError):
-            i.create_interval(short=0)
+    testdata_work = [(42, nullcontext(42)),
+                     (pomo.inv.MIN_WORK-1, pytest.raises(ValueError)),
+                     (pomo.inv.MAX_WORK+1, pytest.raises(ValueError)),
+                     (pomo.inv.MIN_WORK, nullcontext(pomo.inv.MIN_WORK)),
+                     (pomo.inv.MAX_WORK,  nullcontext(pomo.inv.MAX_WORK)),
+                     (60.9, pytest.raises(TypeError)),
+                     (True, pytest.raises(TypeError))]
+    
+    @pytest.mark.parametrize("work,expected", testdata_work)
+    def test_work_param(self, work, expected):
+        with expected as e:
+            res = pomo.create_interval_plan(work = work)
+            assert res[-2].duration == e
+           
 
 
-    def test_long_pass(self):
-        i = pomo.Interval()
-        res = i.create_interval(long=30)
+    testdata_short = [(12, nullcontext(12)),
+                     (pomo.inv.MIN_SHORT-1, pytest.raises(ValueError)),
+                     (pomo.inv.MAX_SHORT+1, pytest.raises(ValueError)),
+                     (pomo.inv.MIN_SHORT, nullcontext(pomo.inv.MIN_SHORT)),
+                     (pomo.inv.MAX_SHORT,  nullcontext(pomo.inv.MAX_SHORT)),
+                     (10.5, pytest.raises(TypeError)),
+                     (True, pytest.raises(TypeError))]
+    
+    @pytest.mark.parametrize("short,expected", testdata_short)
+    def test_short_param(self, short, expected):
+        with expected as e:
+            res = pomo.create_interval_plan(short = short)
+            assert res[-3].duration == e
+    
 
-    def test_long_range_fail(self):
-        i = pomo.Interval()
-        with pytest.raises(ValueError):
-            i.create_interval(long=67)
-
-    def test_long_edge_min(self):
-        i = pomo.Interval()
-        res = i.create_interval(long=pomo.inv.MIN_LONG)
-
-    def test_long_edge_max(self):
-        i = pomo.Interval()
-        res = i.create_interval(long=pomo.inv.MAX_LONG)
-
-    def test_long_type_float(self):
-        i = pomo.Interval()
-        with pytest.raises(TypeError):
-            i.create_interval(long=42.0) #type: ignore
-
-    def test_long_type_bool(self):
-        i = pomo.Interval()
-        with pytest.raises(TypeError):
-            i.create_interval(long=True)
-
-    def test_long_n0(self):
-        i = pomo.Interval()
-        with pytest.raises(ValueError):
-            i.create_interval(long=0)
+    testdata_long = [(30, nullcontext(30)),
+                     (pomo.inv.MIN_LONG-1, pytest.raises(ValueError)),
+                     (pomo.inv.MAX_LONG+1, pytest.raises(ValueError)),
+                     (pomo.inv.MIN_LONG, nullcontext(pomo.inv.MIN_LONG)),
+                     (pomo.inv.MAX_LONG,  nullcontext(pomo.inv.MAX_LONG)),
+                     (30.1, pytest.raises(TypeError)),
+                     (True, pytest.raises(TypeError))]
+    
+    @pytest.mark.parametrize("long,expected", testdata_long)
+    def test_long_param(self, long, expected):
+        with expected as e:
+            res = pomo.create_interval_plan(long = long)
+            assert res[-1].duration == e
 
 
-    def test_count_pass(self):
-        i = pomo.Interval()
-        res = i.create_interval(n=8)
-
-    def test_count_range_fail(self):
-        i = pomo.Interval()
-        with pytest.raises(ValueError):
-            i.create_interval(n=15)
-
-    def test_count_edge_min(self):
-        i = pomo.Interval()
-        res = i.create_interval(n=pomo.inv.MIN_COUNT)
-
-    def test_count_edge_max(self):
-        i = pomo.Interval()
-        res = i.create_interval(n=pomo.inv.MAX_COUNT)
-
-    def test_count_type_float(self):
-        i = pomo.Interval()
-        with pytest.raises(TypeError):
-            i.create_interval(n=5.5) #type: ignore
-
-    def test_count_type_bool(self):
-        i = pomo.Interval()
-        with pytest.raises(TypeError):
-            i.create_interval(n=False)
+    testdata_count = [(6, nullcontext(12)),
+                     (pomo.inv.MIN_COUNT-1, pytest.raises(ValueError)),
+                     (pomo.inv.MAX_COUNT+1, pytest.raises(ValueError)),
+                     (pomo.inv.MIN_COUNT, nullcontext(pomo.inv.MIN_COUNT*2)),
+                     (pomo.inv.MAX_COUNT,  nullcontext(pomo.inv.MAX_COUNT*2)),
+                     (6.7, pytest.raises(TypeError)),
+                     (True, pytest.raises(TypeError))]
+    
+    @pytest.mark.parametrize("count,expected", testdata_count)
+    def test_count_len(self, count, expected):
+        with expected as e:
+            res = pomo.create_interval_plan(n = count)
+            assert len(res) == e
 
     def test_count_n1(self):
-        i = pomo.Interval()
-        res = i.create_interval(n=1)
-        assert res == [pomo.IntervalType.WORK, pomo.IntervalType.LONG]
-
-    def test_count_n0(self):
-        i = pomo.Interval()
-        with pytest.raises(ValueError):
-            i.create_interval(n=0)
+        res = pomo.create_interval_plan(n = 1)
+        assert res == [pomo.Interval(pomo.IntervalType.WORK, 25,1), pomo.Interval(pomo.IntervalType.LONG, 20,1)]
