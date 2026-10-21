@@ -48,5 +48,5 @@ def _check_plan_types(plan_req):
 def _check_plan_ranges(plan_req):
 
     for k, v in plan_req.items():
-        if not v["min"] <= v["value"] <= v["max"]:
+        if not (v["min"] <= v["value"] <= v["max"]):
             raise ValueError(f"{v["value"]} is not within {k} range of {v["min"]} - {v["max"]}")
